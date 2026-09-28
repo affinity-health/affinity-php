@@ -1,0 +1,30 @@
+{
+  "name": "affinity-health/sdk",
+  "description": "Affinity PHP Library",
+  "keywords": [
+    "affinity-health",
+    "api",
+    "sdk"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": "^8.1",
+    "ext-json": "*",
+    "psr/http-client": "^1.0",
+    "psr/http-client-implementation": "^1.0",
+    "psr/http-factory": "^1.0",
+    "psr/http-factory-implementation": "^1.0",
+    "psr/http-message": "^1.1 || ^2.0",
+    "php-http/discovery": "^1.0",
+    "php-http/multipart-stream-builder": "^1.0",
+    "guzzlehttp/guzzle": "^7.10"
+  },
+  "autoload": {
+    "psr-4": {
+      "Affinity\\": "src/"
+    }
+  },
+  "scripts": {
+    "test": "php tests/smoke.php"
+  }
+}

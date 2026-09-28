@@ -1,0 +1,42 @@
+<?php
+
+namespace Affinity\Types;
+
+use Affinity\Core\Json\JsonSerializableType;
+use Affinity\Core\Json\JsonProperty;
+
+class GetOrderResponseReviewResolvedBy extends JsonSerializableType
+{
+    /**
+     * @var string $id
+     */
+    #[JsonProperty('id')]
+    public string $id;
+
+    /**
+     * @var string $type
+     */
+    #[JsonProperty('type')]
+    public string $type;
+
+    /**
+     * @param array{
+     *   id: string,
+     *   type: string,
+     * } $values
+     */
+    public function __construct(
+        array $values,
+    ) {
+        $this->id = $values['id'];
+        $this->type = $values['type'];
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toJson();
+    }
+}

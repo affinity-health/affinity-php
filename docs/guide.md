@@ -1,11 +1,18 @@
-# Php SDK guide
+# PHP SDK guide
 
-> **Unreleased SDK update.**
-  These examples match the new SDK implementation in the repository. They are not available in the
-  current published release yet. Release versions and installation updates will follow.
+PHP server applications. [Source repository](https://github.com/affinity-health/affinity-php) · [All SDKs](https://docs.joinaffinityai.com/guides/reference/sdks/)
 
+## Install
 
-PHP server applications. Types below describe the proposed public interface. [Source repository](https://github.com/affinity-health/affinity-php) · [All SDKs](https://docs.joinaffinityai.com/guides/reference/sdks/)
+Add the repository to `composer.json`, then run `composer require affinity-health/sdk:dev-main`.
+
+```json
+{
+  "repositories": [{ "type": "vcs", "url": "https://github.com/affinity-health/affinity-php" }]
+}
+```
+
+For reproducible builds, pin the Git dependency to a commit.
 
 ## Connect
 

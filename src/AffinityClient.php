@@ -5,13 +5,13 @@ namespace Affinity;
 use Affinity\Locations\LocationsClient;
 use Affinity\ApiKeys\ApiKeysClient;
 use Affinity\Account\AccountClient;
-use Affinity\Catalog\CatalogClient;
+use Affinity\Pharmacies\PharmaciesClient;
 use Affinity\Orders\OrdersClient;
-use Affinity\Webhooks\WebhooksClient;
 use Affinity\Team\TeamClient;
-use Affinity\Patients\PatientsClient;
 use Affinity\Practices\PracticesClient;
-use Affinity\PlatformPricing\PlatformPricingClient;
+use Affinity\Patients\PatientsClient;
+use Affinity\Catalog\CatalogClient;
+use Affinity\Webhooks\WebhooksClient;
 use Psr\Http\Client\ClientInterface;
 use Affinity\Core\Client\RawClient;
 
@@ -33,9 +33,9 @@ class AffinityClient
     public AccountClient $account;
 
     /**
-     * @var CatalogClient $catalog
+     * @var PharmaciesClient $pharmacies
      */
-    public CatalogClient $catalog;
+    public PharmaciesClient $pharmacies;
 
     /**
      * @var OrdersClient $orders
@@ -43,19 +43,9 @@ class AffinityClient
     public OrdersClient $orders;
 
     /**
-     * @var WebhooksClient $webhooks
-     */
-    public WebhooksClient $webhooks;
-
-    /**
      * @var TeamClient $team
      */
     public TeamClient $team;
-
-    /**
-     * @var PatientsClient $patients
-     */
-    public PatientsClient $patients;
 
     /**
      * @var PracticesClient $practices
@@ -63,9 +53,19 @@ class AffinityClient
     public PracticesClient $practices;
 
     /**
-     * @var PlatformPricingClient $platformPricing
+     * @var PatientsClient $patients
      */
-    public PlatformPricingClient $platformPricing;
+    public PatientsClient $patients;
+
+    /**
+     * @var CatalogClient $catalog
+     */
+    public CatalogClient $catalog;
+
+    /**
+     * @var WebhooksClient $webhooks
+     */
+    public WebhooksClient $webhooks;
 
     /**
      * @var array{
@@ -96,20 +96,20 @@ class AffinityClient
      */
     public function __construct(
         string $apiKey,
-        ?string $affinityVersion = null,
+        ?string $affinityVersion = '2026-09-28',
         ?array $options = null,
     ) {
         $defaultHeaders = [
             'x-affinity-api-key' => $apiKey,
             'X-Fern-Language' => 'PHP',
             'X-Fern-SDK-Name' => 'Affinity',
-            'User-Agent' => 'affinity-health/sdk/0.1.0',
+            'User-Agent' => 'affinity-health/sdk/0.2.0',
         ];
         if ($affinityVersion != null) {
             $defaultHeaders['Affinity-Version'] = $affinityVersion;
         }
 
-        $this->options = $options ?? [];
+        $this->options = ($options ?? []) + ['timeout' => 60.0, 'maxRetries' => 0];
 
         $this->options['headers'] = array_merge(
             $defaultHeaders,
@@ -123,12 +123,12 @@ class AffinityClient
         $this->locations = new LocationsClient($this->client, $this->options);
         $this->apiKeys = new ApiKeysClient($this->client, $this->options);
         $this->account = new AccountClient($this->client, $this->options);
-        $this->catalog = new CatalogClient($this->client, $this->options);
+        $this->pharmacies = new PharmaciesClient($this->client, $this->options);
         $this->orders = new OrdersClient($this->client, $this->options);
-        $this->webhooks = new WebhooksClient($this->client, $this->options);
         $this->team = new TeamClient($this->client, $this->options);
-        $this->patients = new PatientsClient($this->client, $this->options);
         $this->practices = new PracticesClient($this->client, $this->options);
-        $this->platformPricing = new PlatformPricingClient($this->client, $this->options);
+        $this->patients = new PatientsClient($this->client, $this->options);
+        $this->catalog = new CatalogClient($this->client, $this->options);
+        $this->webhooks = new WebhooksClient($this->client, $this->options);
     }
 }

@@ -71,7 +71,7 @@ class PracticesClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function listPractices(ListPracticesRequest $request = new ListPracticesRequest(), ?array $options = null): ?ListPracticesResponse
+    public function list(ListPracticesRequest $request = new ListPracticesRequest(), ?array $options = null): ?ListPracticesResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -133,7 +133,7 @@ class PracticesClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function createPractice(CreatePracticeRequest $request, ?array $options = null): ?CreatePracticeResponse
+    public function create(CreatePracticeRequest $request, ?array $options = null): ?CreatePracticeResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -187,7 +187,7 @@ class PracticesClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function getPractice(string $practiceId, ?array $options = null): ?GetPracticeResponse
+    public function get(string $practiceId, ?array $options = null): ?GetPracticeResponse
     {
         $options = array_merge($this->options, $options ?? []);
         try {
@@ -236,13 +236,11 @@ class PracticesClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function updatePractice(string $practiceId, UpdatePracticeRequest $request = new UpdatePracticeRequest(), ?array $options = null): ?UpdatePracticeResponse
+    public function update(string $practiceId, UpdatePracticeRequest $request = new UpdatePracticeRequest(), ?array $options = null): ?UpdatePracticeResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
-        if ($request->idempotencyKey != null) {
-            $headers['Idempotency-Key'] = $request->idempotencyKey;
-        }
+        $headers['Idempotency-Key'] = $request->idempotencyKey ?? bin2hex(random_bytes(16)); // affinity-sdk-auto-key
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(

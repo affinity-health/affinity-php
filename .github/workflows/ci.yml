@@ -12,4 +12,4 @@ jobs:
           php-version: '8.3'
           tools: composer
       - run: composer install --no-interaction
-      - run: composer test
+      - run: ./tests/with-fixtures.sh sh -c 'composer test && php tests/approved.php && php tests/docs_approved.php'

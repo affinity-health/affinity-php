@@ -66,7 +66,7 @@ class AccountClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function getAccount(GetAccountRequest $request = new GetAccountRequest(), ?array $options = null): ?GetAccountResponse
+    public function get(GetAccountRequest $request = new GetAccountRequest(), ?array $options = null): ?GetAccountResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];

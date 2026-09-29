@@ -4,7 +4,7 @@ namespace Affinity\Locations;
 
 use Psr\Http\Client\ClientInterface;
 use Affinity\Core\Client\RawClient;
-use Affinity\Locations\Requests\ListPracticeLocationsRequest;
+use Affinity\Locations\Requests\ListLocationsRequest;
 use Affinity\Types\ListPracticeLocationsResponse;
 use Affinity\Exceptions\AffinityHealthException;
 use Affinity\Exceptions\AffinityHealthApiException;
@@ -18,7 +18,7 @@ use Affinity\Types\CreatePracticeLocationResponse;
 use Affinity\Types\GetPracticeLocationResponse;
 use Affinity\Locations\Requests\UpdatePracticeLocationRequest;
 use Affinity\Types\UpdatePracticeLocationResponse;
-use Affinity\Locations\Requests\ArchivePracticeLocationRequest;
+use Affinity\Locations\Requests\ArchiveLocationsRequest;
 use Affinity\Types\ArchivePracticeLocationResponse;
 
 class LocationsClient
@@ -61,7 +61,7 @@ class LocationsClient
      * Requires locations:read on a practice key or an authorized platform key. Lists active and archived locations by name, with cursor pagination. Use status to filter. Location records are shared between Test and Live for the same practice.
      *
      * @param string $practiceId
-     * @param ListPracticeLocationsRequest $request
+     * @param ListLocationsRequest $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -74,7 +74,7 @@ class LocationsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function listPracticeLocations(string $practiceId, ListPracticeLocationsRequest $request = new ListPracticeLocationsRequest(), ?array $options = null): ?ListPracticeLocationsResponse
+    public function list(string $practiceId, ListLocationsRequest $request = new ListLocationsRequest(), ?array $options = null): ?ListPracticeLocationsResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -137,11 +137,11 @@ class LocationsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function createPracticeLocation(string $practiceId, CreatePracticeLocationRequest $request, ?array $options = null): ?CreatePracticeLocationResponse
+    public function create(string $practiceId, CreatePracticeLocationRequest $request, ?array $options = null): ?CreatePracticeLocationResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
+        $headers['Idempotency-Key'] = $request->idempotencyKey ?? bin2hex(random_bytes(16)); // affinity-sdk-auto-key
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
@@ -190,7 +190,7 @@ class LocationsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function getPracticeLocation(string $practiceId, string $locationId, ?array $options = null): ?GetPracticeLocationResponse
+    public function get(string $practiceId, string $locationId, ?array $options = null): ?GetPracticeLocationResponse
     {
         $options = array_merge($this->options, $options ?? []);
         try {
@@ -240,11 +240,11 @@ class LocationsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function updatePracticeLocation(string $practiceId, string $locationId, UpdatePracticeLocationRequest $request, ?array $options = null): ?UpdatePracticeLocationResponse
+    public function update(string $practiceId, string $locationId, UpdatePracticeLocationRequest $request = new UpdatePracticeLocationRequest(), ?array $options = null): ?UpdatePracticeLocationResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
+        $headers['Idempotency-Key'] = $request->idempotencyKey ?? bin2hex(random_bytes(16)); // affinity-sdk-auto-key
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
@@ -281,7 +281,7 @@ class LocationsClient
      *
      * @param string $practiceId
      * @param string $locationId
-     * @param ArchivePracticeLocationRequest $request
+     * @param ArchiveLocationsRequest $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -294,11 +294,11 @@ class LocationsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function archivePracticeLocation(string $practiceId, string $locationId, ArchivePracticeLocationRequest $request, ?array $options = null): ?ArchivePracticeLocationResponse
+    public function archive(string $practiceId, string $locationId, ArchiveLocationsRequest $request = new ArchiveLocationsRequest(), ?array $options = null): ?ArchivePracticeLocationResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
+        $headers['Idempotency-Key'] = $request->idempotencyKey ?? bin2hex(random_bytes(16)); // affinity-sdk-auto-key
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(

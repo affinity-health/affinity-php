@@ -19,9 +19,9 @@ use Affinity\Patients\Types\UpdatePatientRequestStatus;
 class UpdatePatientRequest extends JsonSerializableType
 {
     /**
-     * @var string $idempotencyKey
+     * @var ?string $idempotencyKey Optional in the SDK. A fresh key is generated once per call when omitted. Supply a stable key to retry across calls.
      */
-    public string $idempotencyKey;
+    public ?string $idempotencyKey;
 
     /**
      * @var ?string $affinityActorId Required for user actors and optional for system actors. Omit both actor headers to use the authenticated service account as a system actor.
@@ -137,7 +137,7 @@ class UpdatePatientRequest extends JsonSerializableType
 
     /**
      * @param array{
-     *   idempotencyKey: string,
+     *   idempotencyKey?: ?string,
      *   affinityActorId?: ?string,
      *   affinityActorType?: ?string,
      *   address?: ?UpdatePatientRequestAddress,
@@ -160,9 +160,9 @@ class UpdatePatientRequest extends JsonSerializableType
      * } $values
      */
     public function __construct(
-        array $values,
+        array $values = [],
     ) {
-        $this->idempotencyKey = $values['idempotencyKey'];
+        $this->idempotencyKey = $values['idempotencyKey'] ?? null;
         $this->affinityActorId = $values['affinityActorId'] ?? null;
         $this->affinityActorType = $values['affinityActorType'] ?? null;
         $this->address = $values['address'] ?? null;

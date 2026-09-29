@@ -8,9 +8,9 @@ use Affinity\Core\Json\JsonProperty;
 class UpdatePracticeLocationRequest extends JsonSerializableType
 {
     /**
-     * @var string $idempotencyKey
+     * @var ?string $idempotencyKey Optional in the SDK. A fresh key is generated once per call when omitted. Supply a stable key to retry across calls.
      */
-    public string $idempotencyKey;
+    public ?string $idempotencyKey;
 
     /**
      * @var ?string $city
@@ -68,7 +68,7 @@ class UpdatePracticeLocationRequest extends JsonSerializableType
 
     /**
      * @param array{
-     *   idempotencyKey: string,
+     *   idempotencyKey?: ?string,
      *   city?: ?string,
      *   country?: ?string,
      *   line1?: ?string,
@@ -81,9 +81,9 @@ class UpdatePracticeLocationRequest extends JsonSerializableType
      * } $values
      */
     public function __construct(
-        array $values,
+        array $values = [],
     ) {
-        $this->idempotencyKey = $values['idempotencyKey'];
+        $this->idempotencyKey = $values['idempotencyKey'] ?? null;
         $this->city = $values['city'] ?? null;
         $this->country = $values['country'] ?? null;
         $this->line1 = $values['line1'] ?? null;

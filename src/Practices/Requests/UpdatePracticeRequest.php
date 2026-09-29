@@ -14,7 +14,7 @@ use Affinity\Practices\Types\UpdatePracticeRequestPrimaryContact;
 class UpdatePracticeRequest extends JsonSerializableType
 {
     /**
-     * @var ?string $idempotencyKey
+     * @var ?string $idempotencyKey Optional in the SDK. A fresh key is generated once per call when omitted. Supply a stable key to retry across calls.
      */
     public ?string $idempotencyKey;
 

@@ -2,10 +2,12 @@
 
 namespace Affinity\Patients;
 
+use Affinity\Patients\Addresses\AddressesClient;
+use Affinity\Patients\Allergies\AllergiesClient;
 use Psr\Http\Client\ClientInterface;
 use Affinity\Core\Client\RawClient;
-use Affinity\Patients\Requests\ListPatientAddressesRequest;
-use Affinity\Types\ListPatientAddressesResponse;
+use Affinity\Patients\Requests\ListPatientsRequest;
+use Affinity\Types\ListPatientsResponse;
 use Affinity\Exceptions\AffinityHealthException;
 use Affinity\Exceptions\AffinityHealthApiException;
 use Affinity\Core\Json\JsonApiRequest;
@@ -13,31 +15,27 @@ use Affinity\Environments;
 use Affinity\Core\Client\HttpMethod;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Affinity\Patients\Requests\CreatePatientAddressRequest;
-use Affinity\Types\CreatePatientAddressResponse;
-use Affinity\Patients\Requests\ArchivePatientAddressRequest;
-use Affinity\Types\ArchivePatientAddressResponse;
-use Affinity\Patients\Requests\UpdatePatientAddressRequest;
-use Affinity\Types\UpdatePatientAddressResponse;
-use Affinity\Patients\Requests\SetDefaultPatientAddressRequest;
-use Affinity\Types\SetDefaultPatientAddressResponse;
-use Affinity\Patients\Requests\ListPatientsRequest;
-use Affinity\Types\ListPatientsResponse;
 use Affinity\Patients\Requests\CreatePatientRequest;
 use Affinity\Types\CreatePatientResponse;
-use Affinity\Patients\Requests\GetPatientRequest;
+use Affinity\Patients\Requests\GetPatientsRequest;
 use Affinity\Types\GetPatientResponse;
-use Affinity\Patients\Requests\DeletePatientRequest;
+use Affinity\Patients\Requests\DeletePatientsRequest;
 use Affinity\Types\DeletePatientResponse;
 use Affinity\Patients\Requests\UpdatePatientRequest;
 use Affinity\Types\UpdatePatientResponse;
-use Affinity\Patients\Requests\GetPatientAllergiesRequest;
-use Affinity\Types\GetPatientAllergiesResponse;
-use Affinity\Patients\Requests\ReplacePatientAllergiesRequest;
-use Affinity\Types\ReplacePatientAllergiesResponse;
 
 class PatientsClient
 {
+    /**
+     * @var AddressesClient $addresses
+     */
+    public AddressesClient $addresses;
+
+    /**
+     * @var AllergiesClient $allergies
+     */
+    public AllergiesClient $allergies;
+
     /**
      * @var array{
      *   baseUrl?: string,
@@ -70,315 +68,8 @@ class PatientsClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
-    }
-
-    /**
-     * @param string $practiceId
-     * @param string $patientId
-     * @param ListPatientAddressesRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?ListPatientAddressesResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function listPatientAddresses(string $practiceId, string $patientId, ListPatientAddressesRequest $request = new ListPatientAddressesRequest(), ?array $options = null): ?ListPatientAddressesResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $query = [];
-        if ($request->status != null) {
-            $query['status'] = $request->status;
-        }
-        if ($request->startingAfter != null) {
-            $query['startingAfter'] = $request->startingAfter;
-        }
-        if ($request->endingBefore != null) {
-            $query['endingBefore'] = $request->endingBefore;
-        }
-        if ($request->limit != null) {
-            $query['limit'] = $request->limit;
-        }
-        $headers = [];
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/practices/{$practiceId}/patients/{$patientId}/addresses",
-                    method: HttpMethod::GET,
-                    headers: $headers,
-                    query: $query,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return ListPatientAddressesResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Returns the existing active address for a normalized duplicate. The first address becomes the default. API keys require Idempotency-Key.
-     *
-     * @param string $practiceId
-     * @param string $patientId
-     * @param CreatePatientAddressRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?CreatePatientAddressResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function createPatientAddress(string $practiceId, string $patientId, CreatePatientAddressRequest $request, ?array $options = null): ?CreatePatientAddressResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/practices/{$practiceId}/patients/{$patientId}/addresses",
-                    method: HttpMethod::POST,
-                    headers: $headers,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return CreatePatientAddressResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Preserves the address ID and history. Archiving the default selects the oldest remaining active address. Existing orders remain unchanged.
-     *
-     * @param string $practiceId
-     * @param string $patientId
-     * @param string $addressId
-     * @param ArchivePatientAddressRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?ArchivePatientAddressResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function archivePatientAddress(string $practiceId, string $patientId, string $addressId, ArchivePatientAddressRequest $request, ?array $options = null): ?ArchivePatientAddressResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/practices/{$practiceId}/patients/{$patientId}/addresses/{$addressId}",
-                    method: HttpMethod::DELETE,
-                    headers: $headers,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return ArchivePatientAddressResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * @param string $practiceId
-     * @param string $patientId
-     * @param string $addressId
-     * @param UpdatePatientAddressRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?UpdatePatientAddressResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function updatePatientAddress(string $practiceId, string $patientId, string $addressId, UpdatePatientAddressRequest $request, ?array $options = null): ?UpdatePatientAddressResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/practices/{$practiceId}/patients/{$patientId}/addresses/{$addressId}",
-                    method: HttpMethod::PATCH,
-                    headers: $headers,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return UpdatePatientAddressResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Changes delivery selection for future drafts, without changing patient clinical location or existing signed orders.
-     *
-     * @param string $practiceId
-     * @param string $patientId
-     * @param string $addressId
-     * @param SetDefaultPatientAddressRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?SetDefaultPatientAddressResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function setDefaultPatientAddress(string $practiceId, string $patientId, string $addressId, SetDefaultPatientAddressRequest $request, ?array $options = null): ?SetDefaultPatientAddressResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/practices/{$practiceId}/patients/{$patientId}/addresses/{$addressId}/default",
-                    method: HttpMethod::PUT,
-                    headers: $headers,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return SetDefaultPatientAddressResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
+        $this->addresses = new AddressesClient($this->client, $this->options);
+        $this->allergies = new AllergiesClient($this->client, $this->options);
     }
 
     /**
@@ -398,7 +89,7 @@ class PatientsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function listPatients(string $practiceId, ListPatientsRequest $request = new ListPatientsRequest(), ?array $options = null): ?ListPatientsResponse
+    public function list(string $practiceId, ListPatientsRequest $request = new ListPatientsRequest(), ?array $options = null): ?ListPatientsResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -499,11 +190,11 @@ class PatientsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function createPatient(string $practiceId, CreatePatientRequest $request, ?array $options = null): ?CreatePatientResponse
+    public function create(string $practiceId, CreatePatientRequest $request, ?array $options = null): ?CreatePatientResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
+        $headers['Idempotency-Key'] = $request->idempotencyKey ?? bin2hex(random_bytes(16)); // affinity-sdk-auto-key
         if ($request->affinityActorId != null) {
             $headers['Affinity-Actor-Id'] = $request->affinityActorId;
         }
@@ -546,7 +237,7 @@ class PatientsClient
      *
      * @param string $practiceId
      * @param string $patientId
-     * @param GetPatientRequest $request
+     * @param GetPatientsRequest $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -559,7 +250,7 @@ class PatientsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function getPatient(string $practiceId, string $patientId, GetPatientRequest $request = new GetPatientRequest(), ?array $options = null): ?GetPatientResponse
+    public function get(string $practiceId, string $patientId, GetPatientsRequest $request = new GetPatientsRequest(), ?array $options = null): ?GetPatientResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -604,7 +295,7 @@ class PatientsClient
      *
      * @param string $practiceId
      * @param string $patientId
-     * @param DeletePatientRequest $request
+     * @param DeletePatientsRequest $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -617,11 +308,11 @@ class PatientsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function deletePatient(string $practiceId, string $patientId, DeletePatientRequest $request, ?array $options = null): ?DeletePatientResponse
+    public function delete(string $practiceId, string $patientId, DeletePatientsRequest $request = new DeletePatientsRequest(), ?array $options = null): ?DeletePatientResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
+        $headers['Idempotency-Key'] = $request->idempotencyKey ?? bin2hex(random_bytes(16)); // affinity-sdk-auto-key
         if ($request->affinityActorId != null) {
             $headers['Affinity-Actor-Id'] = $request->affinityActorId;
         }
@@ -676,11 +367,11 @@ class PatientsClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function updatePatient(string $practiceId, string $patientId, UpdatePatientRequest $request, ?array $options = null): ?UpdatePatientResponse
+    public function update(string $practiceId, string $patientId, UpdatePatientRequest $request = new UpdatePatientRequest(), ?array $options = null): ?UpdatePatientResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
+        $headers['Idempotency-Key'] = $request->idempotencyKey ?? bin2hex(random_bytes(16)); // affinity-sdk-auto-key
         if ($request->affinityActorId != null) {
             $headers['Affinity-Actor-Id'] = $request->affinityActorId;
         }
@@ -705,124 +396,6 @@ class PatientsClient
                     return null;
                 }
                 return UpdatePatientResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Returns the patient's structured allergy entries and review status. A not_reviewed status is not a no-known-allergies assertion and blocks clinical review and signing.
-     *
-     * @param string $practiceId
-     * @param string $patientId
-     * @param GetPatientAllergiesRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?GetPatientAllergiesResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function getPatientAllergies(string $practiceId, string $patientId, GetPatientAllergiesRequest $request = new GetPatientAllergiesRequest(), ?array $options = null): ?GetPatientAllergiesResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/practices/{$practiceId}/patients/{$patientId}/allergies",
-                    method: HttpMethod::GET,
-                    headers: $headers,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return GetPatientAllergiesResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Replaces the patient's structured allergy record. Sending no_known is the explicit no-known-allergies acknowledgement; recorded requires at least one entry. Idempotency-Key is required.
-     *
-     * @param string $practiceId
-     * @param string $patientId
-     * @param ReplacePatientAllergiesRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?ReplacePatientAllergiesResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function replacePatientAllergies(string $practiceId, string $patientId, ReplacePatientAllergiesRequest $request, ?array $options = null): ?ReplacePatientAllergiesResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/practices/{$practiceId}/patients/{$patientId}/allergies",
-                    method: HttpMethod::PUT,
-                    headers: $headers,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return ReplacePatientAllergiesResponse::fromJson($json);
             }
         } catch (JsonException $e) {
             throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

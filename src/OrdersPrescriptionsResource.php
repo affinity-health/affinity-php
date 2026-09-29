@@ -1,0 +1,17 @@
+<?php
+namespace Affinity;
+final class OrdersPrescriptionsResource{
+public function __construct(private SdkContext $context){}
+/** @param array{metadata?: mixed|null, expectedRevision?: string|null, expectedVersions?: list<array{prescriptionId: string, version: int}>|null, prescription: array{externalPrescriptionId?: string|null, clinical?: array{compoundingReason?: array{category?: string|null, context?: string|null}|null, medicationReviewStatus?: string|null, diagnosisReviewStatus?: string|null, currentMedications?: list<string>|null, diagnoses?: list<array{code: string, display: string}>|null, observations?: list<array{display: string, unit: string, value: float|string}>|null}|null, pharmacyId?: string|null, daysSupply: int, dispensing: array{dispenseUponAcceptance?: bool|null, shippingOptionId?: string|null, shippingAmountCents?: int|null, shippingDestinationType?: string|null, pharmacyNotes?: string|null, requestedFillDate?: string|null, substitutionPermitted?: bool|null}, directions: string, medicationId: string, quantity: float|string, quantityUnit: string, refills: int, structuredSig?: array{dose: string, doseUnit: string, duration?: string|null, frequency: string, indication?: string|null, maxDailyUse?: string|null, prn?: bool|null, route: string, titrationSchedule?: string|null}|null}} $params
+ * @param array{practiceId?: string, idempotencyKey?: string, organizationId?: string, actorId?: string, actorType?: string} $options
+ */
+public function add(string $orderId, array $params, array $options = []): \Affinity\Types\AddOrderPrescriptionResponse{
+$result=$this->context->call('addOrderPrescription',[$orderId],$params,$options);
+return \Affinity\Types\AddOrderPrescriptionResponse::fromJson(json_encode($result, JSON_THROW_ON_ERROR));}
+/** @param array{metadata?: mixed|null, expectedRevision?: string|null, expectedVersions?: list<array{prescriptionId: string, version: int}>|null, prescription: array{clinical?: array{compoundingReason?: array{category?: string|null, context?: string|null}|null, medicationReviewStatus?: string|null, diagnosisReviewStatus?: string|null, currentMedications?: list<string>|null, diagnoses?: list<array{code: string, display: string}>|null, observations?: list<array{display: string, unit: string, value: float|string}>|null}|null, pharmacyId?: string|null, daysSupply: int, dispensing: array{dispenseUponAcceptance?: bool|null, shippingOptionId?: string|null, shippingAmountCents?: int|null, shippingDestinationType?: string|null, pharmacyNotes?: string|null, requestedFillDate?: string|null, substitutionPermitted?: bool|null}, directions: string, medicationId: string, quantity: float|string, quantityUnit: string, refills: int, structuredSig?: array{dose: string, doseUnit: string, duration?: string|null, frequency: string, indication?: string|null, maxDailyUse?: string|null, prn?: bool|null, route: string, titrationSchedule?: string|null}|null}} $params
+ * @param array{practiceId?: string, idempotencyKey?: string, organizationId?: string, actorId?: string, actorType?: string} $options
+ */
+public function update(string $orderId, string $prescriptionId, array $params, array $options = []): \Affinity\Types\UpdateOrderPrescriptionResponse{
+$result=$this->context->call('updateOrderPrescription',[$orderId,$prescriptionId],$params,$options);
+return \Affinity\Types\UpdateOrderPrescriptionResponse::fromJson(json_encode($result, JSON_THROW_ON_ERROR));}
+}

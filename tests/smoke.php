@@ -28,10 +28,10 @@ $transport = new class implements ClientInterface {
             '{"object":"list","data":[],"hasMore":false,"url":"/v1/orders"}');
     }
 };
-$client = new AffinityClient(apiKey: 'synthetic-key', affinityVersion: '2026-09-28', options: [
+$client = new AffinityClient(apiKey: 'synthetic-key', options: [
     'baseUrl' => 'https://sdk-test.invalid', 'client' => $transport, 'maxRetries' => 0,
 ]);
-$page = $client->orders->listOrders(new ListOrdersRequest(['startingAfter' => 'ord_cursor', 'limit' => 2,
+$page = $client->orders->list(new ListOrdersRequest(['startingAfter' => 'ord_cursor', 'limit' => 2,
     'affinityActorId' => 'user-synthetic', 'affinityActorType' => 'user']));
 $request = $transport->requests[0];
 check($request->getUri()->getPath() === '/v1/orders', 'incorrect path');
@@ -42,7 +42,7 @@ parse_str($request->getUri()->getQuery(), $query);
 check($query['startingAfter'] === 'ord_cursor' && $query['limit'] === '2', 'incorrect query');
 check($page->data === [] && $page->hasMore === false, 'incorrect response');
 try {
-    $client->orders->createOrder(new CreateOrderRequest([
+    $client->orders->create(new CreateOrderRequest([
         'idempotencyKey' => 'stable-synthetic-key', 'practiceId' => 'prac_synthetic',
         'patientId' => 'pat_synthetic', 'prescriptions' => [],
     ]));

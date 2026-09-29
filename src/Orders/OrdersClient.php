@@ -2,6 +2,11 @@
 
 namespace Affinity\Orders;
 
+use Affinity\Orders\Exceptions\ExceptionsClient;
+use Affinity\Orders\Events\EventsClient;
+use Affinity\Orders\TestSimulation\TestSimulationClient;
+use Affinity\Orders\Prescriptions\PrescriptionsClient;
+use Affinity\Orders\Batches\BatchesClient;
 use Psr\Http\Client\ClientInterface;
 use Affinity\Core\Client\RawClient;
 use Affinity\Orders\Requests\ListOrdersRequest;
@@ -15,17 +20,10 @@ use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Affinity\Orders\Requests\CreateOrderRequest;
 use Affinity\Types\CreateOrderResponse;
-use Affinity\Orders\Requests\GetOrderRequest;
+use Affinity\Orders\Requests\GetOrdersRequest;
 use Affinity\Types\GetOrderResponse;
 use Affinity\Orders\Requests\CancelOrderRequest;
 use Affinity\Types\CancelOrderResponse;
-use Affinity\Orders\Requests\ActOnOrderExceptionRequest;
-use Affinity\Types\ActOnOrderExceptionResponse;
-use Affinity\Orders\Requests\ListOrderEventsRequest;
-use Affinity\Types\ListOrderEventsResponse;
-use Affinity\Types\GetOrderTestSimulationResponse;
-use Affinity\Orders\Requests\UpdateOrderTestSimulationRequest;
-use Affinity\Types\UpdateOrderTestSimulationResponse;
 use Affinity\Orders\Requests\PreviewOrderRequest;
 use Affinity\Types\PreviewOrderResponse;
 use Affinity\Orders\Requests\SignOrderRequest;
@@ -36,15 +34,34 @@ use Affinity\Orders\Requests\SubmitOrderRequest;
 use Affinity\Types\SubmitOrderResponse;
 use Affinity\Orders\Requests\RejectOrderRequest;
 use Affinity\Types\RejectOrderResponse;
-use Affinity\Orders\Requests\AddOrderPrescriptionRequest;
-use Affinity\Types\AddOrderPrescriptionResponse;
-use Affinity\Orders\Requests\UpdateOrderPrescriptionRequest;
-use Affinity\Types\UpdateOrderPrescriptionResponse;
-use Affinity\Orders\Requests\CreateOrderBatchRequest;
-use Affinity\Types\CreateOrderBatchResponse;
 
 class OrdersClient
 {
+    /**
+     * @var ExceptionsClient $exceptions
+     */
+    public ExceptionsClient $exceptions;
+
+    /**
+     * @var EventsClient $events
+     */
+    public EventsClient $events;
+
+    /**
+     * @var TestSimulationClient $testSimulation
+     */
+    public TestSimulationClient $testSimulation;
+
+    /**
+     * @var PrescriptionsClient $prescriptions
+     */
+    public PrescriptionsClient $prescriptions;
+
+    /**
+     * @var BatchesClient $batches
+     */
+    public BatchesClient $batches;
+
     /**
      * @var array{
      *   baseUrl?: string,
@@ -77,6 +94,11 @@ class OrdersClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
+        $this->exceptions = new ExceptionsClient($this->client, $this->options);
+        $this->events = new EventsClient($this->client, $this->options);
+        $this->testSimulation = new TestSimulationClient($this->client, $this->options);
+        $this->prescriptions = new PrescriptionsClient($this->client, $this->options);
+        $this->batches = new BatchesClient($this->client, $this->options);
     }
 
     /**
@@ -93,7 +115,7 @@ class OrdersClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function listOrders(ListOrdersRequest $request = new ListOrdersRequest(), ?array $options = null): ?ListOrdersResponse
+    public function list(ListOrdersRequest $request = new ListOrdersRequest(), ?array $options = null): ?ListOrdersResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -190,7 +212,7 @@ class OrdersClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function createOrder(CreateOrderRequest $request, ?array $options = null): ?CreateOrderResponse
+    public function create(CreateOrderRequest $request, ?array $options = null): ?CreateOrderResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -234,7 +256,7 @@ class OrdersClient
 
     /**
      * @param string $orderId
-     * @param GetOrderRequest $request
+     * @param GetOrdersRequest $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -247,7 +269,7 @@ class OrdersClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function getOrder(string $orderId, GetOrderRequest $request = new GetOrderRequest(), ?array $options = null): ?GetOrderResponse
+    public function get(string $orderId, GetOrdersRequest $request = new GetOrdersRequest(), ?array $options = null): ?GetOrderResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -304,7 +326,7 @@ class OrdersClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function cancelOrder(string $orderId, CancelOrderRequest $request, ?array $options = null): ?CancelOrderResponse
+    public function cancel(string $orderId, CancelOrderRequest $request, ?array $options = null): ?CancelOrderResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -347,233 +369,6 @@ class OrdersClient
     }
 
     /**
-     * Acknowledge, retry, contact, or resolve an order exception in the credential's Test/Live mode. assign_to_me requires a signed-in dashboard user; API keys receive 400 and may use acknowledge instead. Actor headers do not create a dashboard assignee.
-     *
-     * @param string $orderId
-     * @param string $exceptionId
-     * @param ActOnOrderExceptionRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?ActOnOrderExceptionResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function actOnOrderException(string $orderId, string $exceptionId, ActOnOrderExceptionRequest $request, ?array $options = null): ?ActOnOrderExceptionResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/orders/{$orderId}/exceptions/{$exceptionId}/actions",
-                    method: HttpMethod::POST,
-                    headers: $headers,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return ActOnOrderExceptionResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * @param string $orderId
-     * @param ListOrderEventsRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?ListOrderEventsResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function listOrderEvents(string $orderId, ListOrderEventsRequest $request = new ListOrderEventsRequest(), ?array $options = null): ?ListOrderEventsResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $query = [];
-        if ($request->endingBefore != null) {
-            $query['endingBefore'] = $request->endingBefore;
-        }
-        if ($request->limit != null) {
-            $query['limit'] = $request->limit;
-        }
-        if ($request->startingAfter != null) {
-            $query['startingAfter'] = $request->startingAfter;
-        }
-        $headers = [];
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/orders/{$orderId}/events",
-                    method: HttpMethod::GET,
-                    headers: $headers,
-                    query: $query,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return ListOrderEventsResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Requires orders:write. Available only in Test mode.
-     *
-     * @param string $orderId
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?GetOrderTestSimulationResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function getOrderTestSimulation(string $orderId, ?array $options = null): ?GetOrderTestSimulationResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/orders/{$orderId}/test-simulation",
-                    method: HttpMethod::GET,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return GetOrderTestSimulationResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Requires orders:write and Idempotency-Key. Configure before submission or queue a valid pharmacy event in manual mode. Events use normal order history and Test webhooks. Live requests are rejected.
-     *
-     * @param string $orderId
-     * @param UpdateOrderTestSimulationRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?UpdateOrderTestSimulationResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function updateOrderTestSimulation(string $orderId, UpdateOrderTestSimulationRequest $request, ?array $options = null): ?UpdateOrderTestSimulationResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/orders/{$orderId}/test-simulation",
-                    method: HttpMethod::PUT,
-                    headers: $headers,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return UpdateOrderTestSimulationResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
      * Requires orders:write and catalog:read. Supply exactly one of patientId, patientExternalId, or inline patient details. External-ID lookup additionally requires patients:read; inline details require patients:write. Resolves defaults and explicit edits for 1–20 prescriptions. Reuses stored patient details when identifiers match; otherwise previews inline details without creating a patient. Complete previews contain an orders.create input. Does not create records, reserve prices, sign, charge or transmit. No idempotency key is required. Creation and signing recheck current requirements.
      *
      * @param PreviewOrderRequest $request
@@ -589,7 +384,7 @@ class OrdersClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function previewOrder(PreviewOrderRequest $request, ?array $options = null): ?PreviewOrderResponse
+    public function preview(PreviewOrderRequest $request, ?array $options = null): ?PreviewOrderResponse
     {
         $options = array_merge($this->options, $options ?? []);
         try {
@@ -639,7 +434,7 @@ class OrdersClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function signOrder(string $orderId, SignOrderRequest $request, ?array $options = null): ?SignOrderResponse
+    public function sign(string $orderId, SignOrderRequest $request, ?array $options = null): ?SignOrderResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -692,7 +487,7 @@ class OrdersClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function signAndSubmitOrder(string $orderId, SignAndSubmitOrderRequest $request, ?array $options = null): ?SignAndSubmitOrderResponse
+    public function signAndSubmit(string $orderId, SignAndSubmitOrderRequest $request, ?array $options = null): ?SignAndSubmitOrderResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -745,7 +540,7 @@ class OrdersClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function submitOrder(string $orderId, SubmitOrderRequest $request, ?array $options = null): ?SubmitOrderResponse
+    public function submit(string $orderId, SubmitOrderRequest $request, ?array $options = null): ?SubmitOrderResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -798,7 +593,7 @@ class OrdersClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function rejectOrder(string $orderId, RejectOrderRequest $request, ?array $options = null): ?RejectOrderResponse
+    public function reject(string $orderId, RejectOrderRequest $request, ?array $options = null): ?RejectOrderResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -821,183 +616,6 @@ class OrdersClient
                     return null;
                 }
                 return RejectOrderResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Requires orders:write, Idempotency-Key and expectedRevision from the order being edited. Existing integrations may send expectedVersions instead; supply exactly one. Adds a complete prescription to an unsigned Order and returns all new versions. Omitted actor context defaults to the authenticated service account as a system actor. Patient and prescriber attribution stay fixed. Signed orders cannot be amended through this endpoint. Signing and submission require orders:sign through their separate endpoints.
-     *
-     * @param string $orderId
-     * @param AddOrderPrescriptionRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?AddOrderPrescriptionResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function addOrderPrescription(string $orderId, AddOrderPrescriptionRequest $request, ?array $options = null): ?AddOrderPrescriptionResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/orders/{$orderId}/prescriptions",
-                    method: HttpMethod::POST,
-                    headers: $headers,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return AddOrderPrescriptionResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Requires orders:write, Idempotency-Key and expectedRevision from the order being edited. Existing integrations may send expectedVersions instead; supply exactly one. Replaces one prescription with complete medication instructions and returns all new versions. Omitted actor context defaults to the authenticated service account as a system actor. Patient and prescriber attribution stay fixed. Signed orders cannot be amended through this endpoint. Signing and submission require orders:sign through their separate endpoints.
-     *
-     * @param string $orderId
-     * @param string $prescriptionId
-     * @param UpdateOrderPrescriptionRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?UpdateOrderPrescriptionResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function updateOrderPrescription(string $orderId, string $prescriptionId, UpdateOrderPrescriptionRequest $request, ?array $options = null): ?UpdateOrderPrescriptionResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/orders/{$orderId}/prescriptions/{$prescriptionId}",
-                    method: HttpMethod::PATCH,
-                    headers: $headers,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return UpdateOrderPrescriptionResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Creates 1–20 orders for distinct patients in one practice, each with 1–20 prescriptions. Each accepts patientId or inline patient details. Orders and newly created patients commit atomically; any failure saves none. Requires orders:write and Idempotency-Key; inline patients also require patients:write. Omitted actor context defaults to the authenticated service account as a system actor. Sign and submit each resulting order separately using orders:sign.
-     *
-     * @param CreateOrderBatchRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?CreateOrderBatchResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function createOrderBatch(CreateOrderBatchRequest $request, ?array $options = null): ?CreateOrderBatchResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        if ($request->affinityActorId != null) {
-            $headers['Affinity-Actor-Id'] = $request->affinityActorId;
-        }
-        if ($request->affinityActorType != null) {
-            $headers['Affinity-Actor-Type'] = $request->affinityActorType;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/order-batches",
-                    method: HttpMethod::POST,
-                    headers: $headers,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return CreateOrderBatchResponse::fromJson($json);
             }
         } catch (JsonException $e) {
             throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

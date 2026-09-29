@@ -1,0 +1,3 @@
+<?php
+namespace Affinity;
+final class AffinityError extends \RuntimeException {public readonly bool $retryable;public function __construct(public readonly int $status,public readonly string $errorCode,public readonly ?string $requestId,public readonly ?float $retryAfter){parent::__construct("Affinity API request failed ($status)");$this->retryable=in_array($status,[408,429,500,502,503,504],true);}}

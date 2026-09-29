@@ -68,7 +68,7 @@ class ApiKeysClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function createPlatformPracticeApiKey(string $practiceId, CreatePlatformPracticeApiKeyRequest $request, ?array $options = null): ?CreatePlatformPracticeApiKeyResponse
+    public function create(string $practiceId, CreatePlatformPracticeApiKeyRequest $request, ?array $options = null): ?CreatePlatformPracticeApiKeyResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -119,7 +119,7 @@ class ApiKeysClient
      * @throws AffinityHealthException
      * @throws AffinityHealthApiException
      */
-    public function getApiAccess(?array $options = null): ?GetApiAccessResponse
+    public function getAccess(?array $options = null): ?GetApiAccessResponse
     {
         $options = array_merge($this->options, $options ?? []);
         try {

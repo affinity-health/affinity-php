@@ -16,7 +16,7 @@ Set `AFFINITY_API_KEY` to a Test API key on your server. The key selects Test or
 use Affinity\Affinity;
 use Affinity\AffinityError;
 
-$api = new Affinity(apiKey: getenv('AFFINITY_API_KEY'));
+$api = new Affinity(getenv('AFFINITY_API_KEY'));
 ```
 
 ## With a practice key
@@ -31,20 +31,9 @@ $patient = $api->patients->get($patientId);
 $items = $api->catalog->items->list(['limit' => 20]);
 ```
 
-For a recoverable update, pass your persisted key without a practice ID. `job` is your application's saved workflow record.
-
-```php
-$api->patients->update(
-    $patientId,
-    ['email' => 'alex@example.com'],
-    ['idempotencyKey' => $job->updatePatientKey],
-);
-```
-
 ## With a platform key
 
 Pass the target practice with each practice-scoped request. Keep record data separate from request context and idempotency options.
-The update key below comes from your persisted workflow job.
 
 ```php
 $patients = $api->patients->list(['limit' => 20], ['practiceId' => $practiceId]);
@@ -53,7 +42,7 @@ $patient = $api->patients->get($patientId, ['practiceId' => $practiceId]);
 $api->patients->update(
     $patientId,
     ['email' => 'alex@example.com'],
-    ['practiceId' => $practiceId, 'idempotencyKey' => $job->updatePatientKey],
+    ['practiceId' => $practiceId],
 );
 ```
 
@@ -64,6 +53,7 @@ A conflicting practice ID produces an error. Scoping never grants access to anot
 
 ```php
 $practice = $api->forPractice($practiceId);
+
 $patients = $practice->patients->list(['limit' => 20]);
 $items = $practice->catalog->items->list(['limit' => 20]);
 ```
@@ -80,30 +70,30 @@ $patient = $practice->patients->create([
     'name' => ['first' => 'Alex', 'last' => 'Example'],
     'dateOfBirth' => '1990-01-01',
 ]);
+
 $saved = $practice->patients->get($patient->id);
 $practice->patients->update($patient->id, ['email' => 'alex@example.com']);
 $practice->patients->update($patient->id, ['status' => 'archived']);
 ```
 
-Archive patients whose records you need to retain. Permanent deletion is available only for patients without order history and requires an explicit key.
+Archive patients whose records you need to retain. Permanent deletion is available only for patients without order history. No explicit idempotency key is needed.
 
 ```php
-$practice->patients->delete($patientId, [
-    'idempotencyKey' => $job->deletePatientKey,
-]);
+$practice->patients->delete($patientId);
 ```
 
 ## Create an order draft
 
 `draft` is your application's prepared prescription data, using catalog and prescribing options from this practice.
 An order contains 1–20 complete prescriptions for one patient. This example creates an unsigned draft.
+It shows a platform call without a scoped client: practice context and the persisted key belong together in request options.
 
 `job` is your persisted workflow record. Generate and save a unique key for each action before making its first request.
 
 ```php
-$order = $practice->orders->create(
+$order = $api->orders->create(
     ['patientId' => $patientId, 'prescriptions' => $draft->prescriptions],
-    ['idempotencyKey' => $job->createOrderKey],
+    ['practiceId' => $practiceId, 'idempotencyKey' => $job->createOrderKey],
 );
 ```
 
@@ -123,9 +113,11 @@ $practice->orders->sign(
     ],
     ['idempotencyKey' => $job->signOrderKey],
 );
+
 $submission = $practice->orders->submit($orderId, [
     'idempotencyKey' => $job->submitOrderKey,
 ]);
+
 ```
 
 Use separate keys for creating, signing, and submitting. After an uncertain response, retry the same action with the same key and unchanged data.

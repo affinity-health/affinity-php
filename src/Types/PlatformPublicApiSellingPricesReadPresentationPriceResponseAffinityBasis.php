@@ -5,7 +5,7 @@ namespace Affinity\Types;
 use Affinity\Core\Json\JsonSerializableType;
 use Exception;
 
-class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis extends JsonSerializableType
+class PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis extends JsonSerializableType
 {
     /**
      * @var (
@@ -19,9 +19,9 @@ class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis extends Json
 
     /**
      * @var (
-     *    PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem
-     *   |PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage
-     *   |PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisUnit
+     *    PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisItem
+     *   |PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisPackage
+     *   |PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisUnit
      *   |mixed
      * ) $value
      */
@@ -36,9 +36,9 @@ class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis extends Json
      *   |'_unknown'
      * ),
      *   value: (
-     *    PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem
-     *   |PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage
-     *   |PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisUnit
+     *    PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisItem
+     *   |PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisPackage
+     *   |PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisUnit
      *   |mixed
      * ),
      * } $values
@@ -51,36 +51,36 @@ class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis extends Json
     }
 
     /**
-     * @param PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem $item
-     * @return PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis
+     * @param PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisItem $item
+     * @return PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis
      */
-    public static function item(PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem $item): PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis
+    public static function item(PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisItem $item): PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis
     {
-        return new PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis([
+        return new PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis([
             'kind' => 'item',
             'value' => $item,
         ]);
     }
 
     /**
-     * @param PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage $package
-     * @return PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis
+     * @param PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisPackage $package
+     * @return PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis
      */
-    public static function package(PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage $package): PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis
+    public static function package(PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisPackage $package): PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis
     {
-        return new PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis([
+        return new PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis([
             'kind' => 'package',
             'value' => $package,
         ]);
     }
 
     /**
-     * @param PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisUnit $unit
-     * @return PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis
+     * @param PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisUnit $unit
+     * @return PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis
      */
-    public static function unit(PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisUnit $unit): PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis
+    public static function unit(PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisUnit $unit): PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis
     {
-        return new PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis([
+        return new PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasis([
             'kind' => 'unit',
             'value' => $unit,
         ]);
@@ -91,15 +91,15 @@ class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis extends Json
      */
     public function isItem(): bool
     {
-        return $this->value instanceof PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem && $this->kind === 'item';
+        return $this->value instanceof PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisItem && $this->kind === 'item';
     }
 
     /**
-     * @return PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem
+     * @return PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisItem
      */
-    public function asItem(): PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem
+    public function asItem(): PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisItem
     {
-        if (!($this->value instanceof PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem && $this->kind === 'item')) {
+        if (!($this->value instanceof PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisItem && $this->kind === 'item')) {
             throw new Exception(
                 "Expected item; got " . $this->kind . " with value of type " . get_debug_type($this->value),
             );
@@ -113,15 +113,15 @@ class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis extends Json
      */
     public function isPackage(): bool
     {
-        return $this->value instanceof PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage && $this->kind === 'package';
+        return $this->value instanceof PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisPackage && $this->kind === 'package';
     }
 
     /**
-     * @return PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage
+     * @return PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisPackage
      */
-    public function asPackage(): PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage
+    public function asPackage(): PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisPackage
     {
-        if (!($this->value instanceof PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage && $this->kind === 'package')) {
+        if (!($this->value instanceof PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisPackage && $this->kind === 'package')) {
             throw new Exception(
                 "Expected package; got " . $this->kind . " with value of type " . get_debug_type($this->value),
             );
@@ -135,15 +135,15 @@ class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis extends Json
      */
     public function isUnit(): bool
     {
-        return $this->value instanceof PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisUnit && $this->kind === 'unit';
+        return $this->value instanceof PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisUnit && $this->kind === 'unit';
     }
 
     /**
-     * @return PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisUnit
+     * @return PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisUnit
      */
-    public function asUnit(): PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisUnit
+    public function asUnit(): PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisUnit
     {
-        if (!($this->value instanceof PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisUnit && $this->kind === 'unit')) {
+        if (!($this->value instanceof PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisUnit && $this->kind === 'unit')) {
             throw new Exception(
                 "Expected unit; got " . $this->kind . " with value of type " . get_debug_type($this->value),
             );
@@ -221,13 +221,13 @@ class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasis extends Json
         $args['kind'] = $kind;
         switch ($kind) {
             case 'item':
-                $args['value'] = PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem::jsonDeserialize($data);
+                $args['value'] = PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisItem::jsonDeserialize($data);
                 break;
             case 'package':
-                $args['value'] = PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage::jsonDeserialize($data);
+                $args['value'] = PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisPackage::jsonDeserialize($data);
                 break;
             case 'unit':
-                $args['value'] = PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisUnit::jsonDeserialize($data);
+                $args['value'] = PlatformPublicApiSellingPricesReadPresentationPriceResponseAffinityBasisUnit::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

@@ -5,7 +5,7 @@ namespace Affinity\Types;
 use Affinity\Core\Json\JsonSerializableType;
 use Affinity\Core\Json\JsonProperty;
 
-class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage extends JsonSerializableType
+class RetrievePrescribingOptionsResponseCatalogPricingBasisItemQuantityPricesItem extends JsonSerializableType
 {
     /**
      * @var string $quantity
@@ -14,22 +14,22 @@ class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisPackage exten
     public string $quantity;
 
     /**
-     * @var string $unit
+     * @var int $amountCents
      */
-    #[JsonProperty('unit')]
-    public string $unit;
+    #[JsonProperty('amountCents')]
+    public int $amountCents;
 
     /**
      * @param array{
      *   quantity: string,
-     *   unit: string,
+     *   amountCents: int,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
         $this->quantity = $values['quantity'];
-        $this->unit = $values['unit'];
+        $this->amountCents = $values['amountCents'];
     }
 
     /**

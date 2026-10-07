@@ -26,6 +26,18 @@ class PlatformPublicApiSellingPricesReadSellingPriceResponse extends JsonSeriali
     public string $currency;
 
     /**
+     * @var ?int $affinityPriceCents
+     */
+    #[JsonProperty('affinityPriceCents')]
+    public ?int $affinityPriceCents;
+
+    /**
+     * @var ?PlatformPublicApiSellingPricesReadSellingPriceResponseAffinityBasis $affinityBasis
+     */
+    #[JsonProperty('affinityBasis')]
+    public ?PlatformPublicApiSellingPricesReadSellingPriceResponseAffinityBasis $affinityBasis;
+
+    /**
      * @var PlatformPublicApiSellingPricesReadSellingPriceResponseBasis $basis
      */
     #[JsonProperty('basis')]
@@ -51,6 +63,8 @@ class PlatformPublicApiSellingPricesReadSellingPriceResponse extends JsonSeriali
      *   purchaseAmountCents: int,
      *   requiresReview: bool,
      *   amountCents?: ?int,
+     *   affinityPriceCents?: ?int,
+     *   affinityBasis?: ?PlatformPublicApiSellingPricesReadSellingPriceResponseAffinityBasis,
      * } $values
      */
     public function __construct(
@@ -59,6 +73,8 @@ class PlatformPublicApiSellingPricesReadSellingPriceResponse extends JsonSeriali
         $this->amountCents = $values['amountCents'] ?? null;
         $this->version = $values['version'];
         $this->currency = $values['currency'];
+        $this->affinityPriceCents = $values['affinityPriceCents'] ?? null;
+        $this->affinityBasis = $values['affinityBasis'] ?? null;
         $this->basis = $values['basis'];
         $this->purchaseAmountCents = $values['purchaseAmountCents'];
         $this->requiresReview = $values['requiresReview'];

@@ -4,6 +4,7 @@ namespace Affinity\Types;
 
 use Affinity\Core\Json\JsonSerializableType;
 use Affinity\Core\Json\JsonProperty;
+use Affinity\Core\Types\ArrayType;
 
 class PlatformPublicApiSellingPricesReadSellingPriceResponseBasisItem extends JsonSerializableType
 {
@@ -20,9 +21,16 @@ class PlatformPublicApiSellingPricesReadSellingPriceResponseBasisItem extends Js
     public string $unit;
 
     /**
+     * @var ?array<PlatformPublicApiSellingPricesReadSellingPriceResponseBasisItemQuantityPricesItem> $quantityPrices
+     */
+    #[JsonProperty('quantityPrices'), ArrayType([PlatformPublicApiSellingPricesReadSellingPriceResponseBasisItemQuantityPricesItem::class])]
+    public ?array $quantityPrices;
+
+    /**
      * @param array{
      *   quantity: value-of<PlatformPublicApiSellingPricesReadSellingPriceResponseBasisItemQuantity>,
      *   unit: string,
+     *   quantityPrices?: ?array<PlatformPublicApiSellingPricesReadSellingPriceResponseBasisItemQuantityPricesItem>,
      * } $values
      */
     public function __construct(
@@ -30,6 +38,7 @@ class PlatformPublicApiSellingPricesReadSellingPriceResponseBasisItem extends Js
     ) {
         $this->quantity = $values['quantity'];
         $this->unit = $values['unit'];
+        $this->quantityPrices = $values['quantityPrices'] ?? null;
     }
 
     /**

@@ -4,5 +4,5 @@ namespace Affinity;
 
 enum Environments: string
 {
-    case Production = "https://api.joinaffinityai.com";
+    case Production = "https://api.affinityrx.com";
 }

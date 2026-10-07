@@ -10,6 +10,12 @@ use Affinity\Core\Types\Union;
 class RetrievePrescribingOptionsResponseCatalogCatalogDetails extends JsonSerializableType
 {
     /**
+     * @var ?array<RetrievePrescribingOptionsResponseCatalogCatalogDetailsPackageComponentsItem> $packageComponents Confirmed physical containers and contents. Empty or absent means container count cannot be inferred from dispense quantity.
+     */
+    #[JsonProperty('packageComponents'), ArrayType([RetrievePrescribingOptionsResponseCatalogCatalogDetailsPackageComponentsItem::class])]
+    public ?array $packageComponents;
+
+    /**
      * @var array<string, (
      *    string
      *   |array<string>
@@ -31,11 +37,13 @@ class RetrievePrescribingOptionsResponseCatalogCatalogDetails extends JsonSerial
      *   |array<string>
      * )>,
      *   directions: array<RetrievePrescribingOptionsResponseCatalogCatalogDetailsDirectionsItem>,
+     *   packageComponents?: ?array<RetrievePrescribingOptionsResponseCatalogCatalogDetailsPackageComponentsItem>,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
+        $this->packageComponents = $values['packageComponents'] ?? null;
         $this->attributes = $values['attributes'];
         $this->directions = $values['directions'];
     }

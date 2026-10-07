@@ -6,6 +6,7 @@ use Affinity\Catalog\Items\ItemsClient;
 use Affinity\Catalog\ShippingOptions\ShippingOptionsClient;
 use Affinity\Catalog\PrescribingOptions\PrescribingOptionsClient;
 use Affinity\Catalog\SellingPrices\SellingPricesClient;
+use Affinity\Catalog\PresentationPrices\PresentationPricesClient;
 use Psr\Http\Client\ClientInterface;
 use Affinity\Core\Client\RawClient;
 
@@ -30,6 +31,11 @@ class CatalogClient
      * @var SellingPricesClient $sellingPrices
      */
     public SellingPricesClient $sellingPrices;
+
+    /**
+     * @var PresentationPricesClient $presentationPrices
+     */
+    public PresentationPricesClient $presentationPrices;
 
     /**
      * @var array{
@@ -67,5 +73,6 @@ class CatalogClient
         $this->shippingOptions = new ShippingOptionsClient($this->client, $this->options);
         $this->prescribingOptions = new PrescribingOptionsClient($this->client, $this->options);
         $this->sellingPrices = new SellingPricesClient($this->client, $this->options);
+        $this->presentationPrices = new PresentationPricesClient($this->client, $this->options);
     }
 }

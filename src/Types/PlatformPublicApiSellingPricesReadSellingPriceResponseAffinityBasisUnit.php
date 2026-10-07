@@ -5,10 +5,10 @@ namespace Affinity\Types;
 use Affinity\Core\Json\JsonSerializableType;
 use Affinity\Core\Json\JsonProperty;
 
-class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem extends JsonSerializableType
+class PlatformPublicApiSellingPricesReadSellingPriceResponseAffinityBasisUnit extends JsonSerializableType
 {
     /**
-     * @var value-of<PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItemQuantity> $quantity
+     * @var value-of<PlatformPublicApiSellingPricesReadSellingPriceResponseAffinityBasisUnitQuantity> $quantity
      */
     #[JsonProperty('quantity')]
     public string $quantity;
@@ -21,7 +21,7 @@ class PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItem extends 
 
     /**
      * @param array{
-     *   quantity: value-of<PlatformPublicApiSellingPricesUpdateSellingPriceResponseBasisItemQuantity>,
+     *   quantity: value-of<PlatformPublicApiSellingPricesReadSellingPriceResponseAffinityBasisUnitQuantity>,
      *   unit: string,
      * } $values
      */

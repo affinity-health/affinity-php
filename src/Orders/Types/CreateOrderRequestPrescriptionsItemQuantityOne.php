@@ -4,6 +4,6 @@ namespace Affinity\Orders\Types;
 
 enum CreateOrderRequestPrescriptionsItemQuantityOne: string
 {
-    case Infinity = "Infinity";
     case NaN = "NaN";
+    case Infinity = "Infinity";
 }

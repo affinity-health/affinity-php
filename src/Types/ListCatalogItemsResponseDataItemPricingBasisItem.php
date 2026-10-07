@@ -4,6 +4,7 @@ namespace Affinity\Types;
 
 use Affinity\Core\Json\JsonSerializableType;
 use Affinity\Core\Json\JsonProperty;
+use Affinity\Core\Types\ArrayType;
 
 class ListCatalogItemsResponseDataItemPricingBasisItem extends JsonSerializableType
 {
@@ -20,9 +21,16 @@ class ListCatalogItemsResponseDataItemPricingBasisItem extends JsonSerializableT
     public string $unit;
 
     /**
+     * @var ?array<ListCatalogItemsResponseDataItemPricingBasisItemQuantityPricesItem> $quantityPrices
+     */
+    #[JsonProperty('quantityPrices'), ArrayType([ListCatalogItemsResponseDataItemPricingBasisItemQuantityPricesItem::class])]
+    public ?array $quantityPrices;
+
+    /**
      * @param array{
      *   quantity: value-of<ListCatalogItemsResponseDataItemPricingBasisItemQuantity>,
      *   unit: string,
+     *   quantityPrices?: ?array<ListCatalogItemsResponseDataItemPricingBasisItemQuantityPricesItem>,
      * } $values
      */
     public function __construct(
@@ -30,6 +38,7 @@ class ListCatalogItemsResponseDataItemPricingBasisItem extends JsonSerializableT
     ) {
         $this->quantity = $values['quantity'];
         $this->unit = $values['unit'];
+        $this->quantityPrices = $values['quantityPrices'] ?? null;
     }
 
     /**

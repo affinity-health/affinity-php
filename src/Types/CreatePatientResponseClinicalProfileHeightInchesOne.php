@@ -4,6 +4,6 @@ namespace Affinity\Types;
 
 enum CreatePatientResponseClinicalProfileHeightInchesOne: string
 {
-    case Infinity = "Infinity";
     case NaN = "NaN";
+    case Infinity = "Infinity";
 }

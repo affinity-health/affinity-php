@@ -24,7 +24,7 @@ final class SdkTransport {
         for ($attempt = 0; ; $attempt++) {
             $delay = 0.25 * (2 ** $attempt);
             try {
-                $response = $this->http->request($method, rtrim($this->config['baseUrl'] ?? 'https://api.joinaffinityai.com', '/') . $path, [
+                $response = $this->http->request($method, rtrim($this->config['baseUrl'] ?? 'https://api.affinityrx.com', '/') . $path, [
                     'headers' => array_merge(['Authorization' => 'Bearer ' . $this->key, 'Affinity-Version' => '2026-09-28'], $headers, $body === null ? [] : ['Content-Type' => 'application/json']),
                     'body' => $payload, 'timeout' => $this->config['timeout'] ?? 60,
                     'http_errors' => false, 'allow_redirects' => false,

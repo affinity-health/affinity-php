@@ -103,7 +103,7 @@ class AffinityClient
             'x-affinity-api-key' => $apiKey,
             'X-Fern-Language' => 'PHP',
             'X-Fern-SDK-Name' => 'Affinity',
-            'User-Agent' => 'affinity-health/sdk/0.2.0',
+            'User-Agent' => 'affinity-health/sdk/0.3.0',
         ];
         if ($affinityVersion != null) {
             $defaultHeaders['Affinity-Version'] = $affinityVersion;

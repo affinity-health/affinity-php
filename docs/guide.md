@@ -1,10 +1,10 @@
 # PHP SDK guide
 
-PHP server applications. [Source repository](https://github.com/affinity-health/affinity-php) · [All SDKs](https://docs.joinaffinityai.com/guides/reference/sdks/)
+PHP server applications. [Source repository](https://github.com/affinity-health/affinity-php) · [All SDKs](https://docs.affinityrx.com/guides/reference/sdks/)
 
 ## Install
 
-Add the repository to `composer.json`, then run `composer require affinity-health/sdk:dev-main`.
+Add the repository to `composer.json`, then run `composer require affinity-health/sdk:0.3.0`.
 
 ```json
 {
@@ -12,7 +12,7 @@ Add the repository to `composer.json`, then run `composer require affinity-healt
 }
 ```
 
-For reproducible builds, pin the Git dependency to a commit.
+Version 0.3.0 uses the same deployed API contract as TypeScript SDK 1.16.0.
 
 ## Connect
 
@@ -176,7 +176,7 @@ try {
 
 Retryability is a transport hint, not permission to repeat a clinical action with a new key.
 Keep the same key and body for an uncertain write. Validation and authorization errors require a corrected request.
-See [API errors](https://docs.joinaffinityai.com/errors/) for recovery guidance.
+See [API errors](https://docs.affinityrx.com/errors/) for recovery guidance.
 
 ## Platform directory and webhooks
 
@@ -192,4 +192,4 @@ $endpoints = $api->webhooks->endpoints->list(['limit' => 20]);
 ## More resources
 
 Use the same conventions for addresses, allergies, locations, team members, and nested order resources.
-[API reference](https://docs.joinaffinityai.com/api/) · [Webhooks](https://docs.joinaffinityai.com/guides/webhooks/)
+[API reference](https://docs.affinityrx.com/api/) · [Webhooks](https://docs.affinityrx.com/guides/webhooks/)

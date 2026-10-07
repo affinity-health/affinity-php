@@ -5,6 +5,7 @@ namespace Affinity\Types;
 use Affinity\Core\Json\JsonSerializableType;
 use Affinity\Core\Json\JsonProperty;
 use Affinity\Core\Types\ArrayType;
+use Affinity\Core\Types\Union;
 
 class UpdateOrderPrescriptionResponse extends JsonSerializableType
 {
@@ -27,10 +28,14 @@ class UpdateOrderPrescriptionResponse extends JsonSerializableType
     public ?string $externalOrderId;
 
     /**
-     * @var UpdateOrderPrescriptionResponseMetadata $metadata
+     * @var array<string, (
+     *    string
+     *   |float
+     *   |bool
+     * )|null> $metadata
      */
-    #[JsonProperty('metadata')]
-    public UpdateOrderPrescriptionResponseMetadata $metadata;
+    #[JsonProperty('metadata'), ArrayType(['string' => new Union(new Union('string', 'float', 'bool'), 'null')])]
+    public array $metadata;
 
     /**
      * @var string $orderId
@@ -54,7 +59,11 @@ class UpdateOrderPrescriptionResponse extends JsonSerializableType
      * @param array{
      *   revision: string,
      *   object: value-of<UpdateOrderPrescriptionResponseObject>,
-     *   metadata: UpdateOrderPrescriptionResponseMetadata,
+     *   metadata: array<string, (
+     *    string
+     *   |float
+     *   |bool
+     * )|null>,
      *   orderId: string,
      *   prescriptionId: string,
      *   prescriptions: array<UpdateOrderPrescriptionResponsePrescriptionsItem>,

@@ -13,8 +13,6 @@ use Affinity\Environments;
 use Affinity\Core\Client\HttpMethod;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Affinity\Catalog\SellingPrices\Requests\PlatformPublicApiSellingPricesUpdateSellingPriceRequest;
-use Affinity\Types\PlatformPublicApiSellingPricesUpdateSellingPriceResponse;
 
 class SellingPricesClient
 {
@@ -53,7 +51,7 @@ class SellingPricesClient
     }
 
     /**
-     * Requires selling_prices:read. Omit practiceId for the platform default, or supply a managed practice. A null amount inherits the next applicable price. Amounts use the catalog pricing basis, in USD cents. purchaseAmountCents is the platform's Affinity purchase price for that same basis. requiresReview indicates changed product pricing terms, not a below-purchase-price discount.
+     * Requires selling_prices:read. Reads the Affinity-managed purchase-price override inherited by this platform's practices unless Affinity sets a practice override. Use the practice-scoped catalog for effective practice prices and presentation-price when an Affinity default may be absent. Platforms cannot edit purchase prices.
      *
      * @param string $catalogItemId
      * @param GetSellingPricesRequest $request
@@ -93,59 +91,6 @@ class SellingPricesClient
                     return null;
                 }
                 return PlatformPublicApiSellingPricesReadSellingPriceResponse::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new AffinityHealthException(message: $e->getMessage(), previous: $e);
-        }
-        throw new AffinityHealthApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
-     * Requires selling_prices:write. Sets a platform default or managed practice override in the current Test/Live mode. Send baseVersion from Read selling price. Null removes the override. Prices use the catalog pricing basis. Intentional discounts below purchaseAmountCents are allowed; compare these amounts to warn about selling below your Affinity purchase price. This does not change the platform's Affinity purchase price or collect practice payments.
-     *
-     * @param string $catalogItemId
-     * @param PlatformPublicApiSellingPricesUpdateSellingPriceRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?PlatformPublicApiSellingPricesUpdateSellingPriceResponse
-     * @throws AffinityHealthException
-     * @throws AffinityHealthApiException
-     */
-    public function update(string $catalogItemId, PlatformPublicApiSellingPricesUpdateSellingPriceRequest $request, ?array $options = null): ?PlatformPublicApiSellingPricesUpdateSellingPriceResponse
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $headers = [];
-        $headers['Idempotency-Key'] = $request->idempotencyKey;
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Production->value,
-                    path: "v1/catalog/items/{$catalogItemId}/selling-price",
-                    method: HttpMethod::PUT,
-                    headers: $headers,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return PlatformPublicApiSellingPricesUpdateSellingPriceResponse::fromJson($json);
             }
         } catch (JsonException $e) {
             throw new AffinityHealthException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
